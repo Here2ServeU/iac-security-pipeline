@@ -107,3 +107,5 @@ wcwidth==0.2.13
 xmltodict==0.14.2
 yarl==1.20.1
 zipp==3.23.0
+fpdf
+pandas 

@@ -1,11 +1,12 @@
 import os
+import pandas as pd
 import matplotlib.pyplot as plt
 from dotenv import load_dotenv
 from datetime import datetime
 from openai import OpenAI
 from fpdf import FPDF
 
-# Load .env
+# Load environment variables from .env
 load_dotenv()
 
 # Simulated scan results
@@ -16,21 +17,66 @@ scan_summary = {
     "AI Best Practices": {"Critical": 2, "High": 1, "Medium": 1, "Low": 1}
 }
 
-# === Step 1: Generate scan results chart ===
+# Detailed recommendations per tool and severity
+recommendations = {
+    "Checkov": {
+        "Critical": "Audit IAM roles and block unrestricted access.",
+        "High": "Enable encryption and enforce compliance checks.",
+        "Medium": "Tag cloud resources and apply default security groups.",
+        "Low": "Standardize all resource declarations in Terraform."
+    },
+    "Trivy": {
+        "Critical": "Use minimal base images and patch critical CVEs.",
+        "High": "Schedule regular rebuilds with updated dependencies.",
+        "Medium": "Reduce unnecessary packages in Dockerfiles.",
+        "Low": "Evaluate third-party package sources."
+    },
+    "Gitleaks": {
+        "Critical": "Remove secrets from repo history and rotate keys.",
+        "High": "Use env variables or secrets managers instead of hardcoding.",
+        "Medium": "Educate developers on secret hygiene best practices.",
+        "Low": "Run secrets scan before each commit."
+    },
+    "AI Best Practices": {
+        "Critical": "Enforce build breaks for Critical issues and add auto-linting.",
+        "High": "Notify team leads on Slack when High issues are detected.",
+        "Medium": "Suggest fixes using GPT-based inline code comments.",
+        "Low": "Review low-severity suggestions during weekly retros."
+    }
+}
+
+# Build the recommendations table for CSV
+rows = []
+for tool, severity_data in scan_summary.items():
+    for severity, count in severity_data.items():
+        if count > 0:
+            rows.append({
+                "Tool": tool,
+                "Severity": severity,
+                "Count": count,
+                "Recommendation": recommendations[tool][severity]
+            })
+
+# Save to CSV
+csv_path = "devsecops_recommendations.csv"
+df = pd.DataFrame(rows)
+df.to_csv(csv_path, index=False)
+
+# Generate scan result chart
 categories = list(scan_summary.keys())
-critical = [scan_summary[cat]["Critical"] for cat in categories]
-high = [scan_summary[cat]["High"] for cat in categories]
-medium = [scan_summary[cat]["Medium"] for cat in categories]
-low = [scan_summary[cat]["Low"] for cat in categories]
+critical = [scan_summary[t]["Critical"] for t in categories]
+high = [scan_summary[t]["High"] for t in categories]
+medium = [scan_summary[t]["Medium"] for t in categories]
+low = [scan_summary[t]["Low"] for t in categories]
 
 bar_width = 0.2
 x = range(len(categories))
 
 fig, ax = plt.subplots(figsize=(10, 6))
-ax.bar([i - 1.5 * bar_width for i in x], critical, width=bar_width, label='Critical')
-ax.bar([i - 0.5 * bar_width for i in x], high, width=bar_width, label='High')
-ax.bar([i + 0.5 * bar_width for i in x], medium, width=bar_width, label='Medium')
-ax.bar([i + 1.5 * bar_width for i in x], low, width=bar_width, label='Low')
+ax.bar([i - 1.5 * bar_width for i in x], critical, width=bar_width, label='Critical', color='darkred')
+ax.bar([i - 0.5 * bar_width for i in x], high, width=bar_width, label='High', color='orange')
+ax.bar([i + 0.5 * bar_width for i in x], medium, width=bar_width, label='Medium', color='gold')
+ax.bar([i + 1.5 * bar_width for i in x], low, width=bar_width, label='Low', color='green')
 
 ax.set_xticks(x)
 ax.set_xticklabels(categories)
@@ -41,68 +87,7 @@ ax.legend()
 plt.tight_layout()
 chart_path = "devsecops_scan_results.png"
 plt.savefig(chart_path)
-plt.close()
 
-# === Step 2: Get recommendations from OpenAI ===
-openai_key = os.getenv("OPENAI_API_KEY")
-if not openai_key:
-    raise EnvironmentError("Missing OPENAI_API_KEY in .env")
-
-client = OpenAI(api_key=openai_key)
-
-response = client.chat.completions.create(
-    model="gpt-4",
-    messages=[
-        {"role": "system", "content": "You are a security advisor helping DevSecOps teams improve workflows."},
-        {"role": "user", "content": "Based on these scan findings, give me a list of 5 clear security improvement recommendations."}
-    ]
-)
-
-recommendations = response.choices[0].message.content.strip().split('\n')
-
-# === Step 3: Generate PDF report ===
-class PDFReport(FPDF):
-    def header(self):
-        self.set_font("Arial", "B", 14)
-        self.cell(0, 10, "AI-Powered DevSecOps Summary Report", ln=True, align="C")
-
-    def footer(self):
-        self.set_y(-15)
-        self.set_font("Arial", "I", 10)
-        self.cell(0, 10, f"Page {self.page_no()}", 0, 0, "C")
-
-pdf = PDFReport()
-pdf.add_page()
-pdf.set_font("Arial", "", 12)
-
-# Meta Info
-date_today = datetime.now().strftime("%Y-%m-%d")
-pdf.cell(0, 10, f"Scan Date: {date_today}", ln=True)
-pdf.cell(0, 10, "Pipeline Trigger: GitHub Pull Request", ln=True)
-pdf.cell(0, 10, "Environment: IaC Security Pipeline for T2S", ln=True)
-pdf.cell(0, 10, "Generated By: Emmanuel Naweji", ln=True)
-
-pdf.ln(10)
-pdf.set_font("Arial", "B", 12)
-pdf.cell(0, 10, "Findings Summary", ln=True)
-pdf.set_font("Arial", "", 11)
-
-for tool, levels in scan_summary.items():
-    total = sum(levels.values())
-    pdf.cell(0, 10, f"{tool}: Total Issues: {total} (Critical: {levels['Critical']}, High: {levels['High']}, Medium: {levels['Medium']}, Low: {levels['Low']})", ln=True)
-
-pdf.ln(10)
-pdf.set_font("Arial", "B", 12)
-pdf.cell(0, 10, "AI Recommendations", ln=True)
-pdf.set_font("Arial", "", 11)
-
-for rec in recommendations:
-    pdf.multi_cell(0, 8, rec)
-
-pdf.ln(10)
-pdf.image(chart_path, w=180)
-
-pdf_output_path = "ai-security-analysis.pdf"
-pdf.output(pdf_output_path)
-
-print(f" Reports generated:\n- {chart_path}\n- {pdf_output_path}")
+# Output
+print(f" Chart saved as: {chart_path}")
+print(f" Recommendations CSV saved as: {csv_path}")

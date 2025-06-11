@@ -1,0 +1,16 @@
+Tool,Severity,Count,Recommendation
+Checkov,Critical,3,Audit IAM roles and block unrestricted access.
+Checkov,High,4,Enable encryption and enforce compliance checks.
+Checkov,Medium,3,Tag cloud resources and apply default security groups.
+Checkov,Low,2,Standardize all resource declarations in Terraform.
+Trivy,Critical,5,Use minimal base images and patch critical CVEs.
+Trivy,High,10,Schedule regular rebuilds with updated dependencies.
+Trivy,Medium,7,Reduce unnecessary packages in Dockerfiles.
+Trivy,Low,4,Evaluate third-party package sources.
+Gitleaks,Critical,1,Remove secrets from repo history and rotate keys.
+Gitleaks,High,1,Use env variables or secrets managers instead of hardcoding.
+Gitleaks,Medium,1,Educate developers on secret hygiene best practices.
+AI Best Practices,Critical,2,Enforce build breaks for Critical issues and add auto-linting.
+AI Best Practices,High,1,Notify team leads on Slack when High issues are detected.
+AI Best Practices,Medium,1,Suggest fixes using GPT-based inline code comments.
+AI Best Practices,Low,1,Review low-severity suggestions during weekly retros.
