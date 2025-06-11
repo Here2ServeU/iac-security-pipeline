@@ -1,3 +1,4 @@
+
 # AI-Powered IaC Security Pipeline for T2S
 
 This project simulates a real-world DevSecOps case for Transformed 2 Succeed (T2S), combining infrastructure, containers, secret detection, and AI-powered recommendations into one automated GitHub CI/CD workflow.
@@ -55,7 +56,7 @@ OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
    - Scan the Dockerfile with Trivy
    - Detect secrets using Gitleaks
    - Auto-generate:
-     - `ai-security-analysis.md` – a human-readable summary with GPT recommendations
+     - `ai-security-analysis.pdf` – a human-readable summary with GPT recommendations
      - `devsecops_scan_results.png` – a visual chart of scan severity counts
 
 ---
@@ -90,7 +91,7 @@ docker/
 checkov-report.json              # Output from Checkov
 trivy-report.json                # Output from Trivy
 gitleaks-report.sarif            # Output from Gitleaks
-ai-security-analysis.md          # AI-generated recommendations
+ai-security-analysis.pdf         # AI-generated recommendations (PDF)
 devsecops_scan_results.png       # Vulnerability visual chart
 requirements.txt                 # Python dependencies
 ```
@@ -123,7 +124,7 @@ This pipeline enables T2S to:
 ```bash
 deactivate
 rm -rf venv
-rm *.json *.sarif *.png *.md
+rm *.json *.sarif *.png *.pdf
 ```
 
 ---
@@ -162,3 +163,4 @@ Helping businesses modernize infrastructure and guiding engineers into top 1% ca
 
 Let’s talk about securing your CI/CD pipeline with AI-driven automation.  
 👉🏾 [Schedule a free 1:1 consultation](https://bit.ly/letus-meet)
+
