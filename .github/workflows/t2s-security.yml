@@ -58,7 +58,7 @@ jobs:
           python .github/scripts/ai_analyzer.py
 
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: t2s-devsecops-reports
           path: |
