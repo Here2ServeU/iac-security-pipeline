@@ -36,7 +36,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install trivy -y
 
-      # Only use the action to install Gitleaks; do not run the scan with the action to avoid artifact errors
       - name: Install Gitleaks
         uses: gitleaks/gitleaks-action@v2.3.4
 
@@ -58,7 +57,6 @@ jobs:
         run: |
           python .github/scripts/ai_analyzer.py
 
-      # Artifact names must be alphanumeric, dashes, or underscores (no dots except in file extensions)
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
