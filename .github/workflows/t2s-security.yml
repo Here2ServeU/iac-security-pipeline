@@ -49,7 +49,7 @@ jobs:
 
       - name: Run Gitleaks
         run: |
-          gitleaks detect --source . --report-format sarif --report-path gitleaks-report.sarif || true
+          gitleaks detect --source . --report-format sarif --report-path gitleaks_report.sarif || true
 
       - name: Run AI-Powered Analysis
         env:
@@ -60,7 +60,8 @@ jobs:
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: t2s-devsecops-reports
+          name: t2s_devsecops_reports
           path: |
             devsecops_scan_results.png
             devsecops_recommendations.csv
+            gitleaks_report.sarif
