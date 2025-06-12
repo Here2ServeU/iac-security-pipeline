@@ -36,11 +36,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install trivy -y
 
-      # Use only the gitleaks-action to install gitleaks, not to run the scan directly
+      # Use the action ONLY to install Gitleaks, do NOT pass invalid 'args'
       - name: Install Gitleaks
         uses: gitleaks/gitleaks-action@v2.3.4
-        with:
-          args: version
 
       - name: Run Checkov on Terraform
         run: |
@@ -68,8 +66,3 @@ jobs:
             devsecops_scan_results.png
             devsecops_recommendations.csv
             gitleaks_report.sarif
-
-    # Add a workaround for deprecated set-output if needed
-    env:
-      # Ensures any ::set-output usage in custom scripts does not break
-      GITHUB_OUTPUT: ${{ github.output }}
