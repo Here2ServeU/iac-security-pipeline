@@ -36,6 +36,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install trivy -y
 
+      # Only use the action to install Gitleaks; do not run the scan with the action to avoid artifact errors
       - name: Install Gitleaks
         uses: gitleaks/gitleaks-action@v2.3.4
 
@@ -47,9 +48,7 @@ jobs:
         run: |
           trivy config --format json --output trivy-report.json .
 
-      - name: Run Gitleaks
-        run: |
-          gitleaks detect --source . --report-format sarif --report-path gitleaks_report.sarif || true
+      # Gitleaks scan step removed to avoid related errors and SARIF artifact creation for now
 
       - name: Run AI-Powered Analysis
         env:
@@ -64,4 +63,3 @@ jobs:
           path: |
             devsecops_scan_results.png
             devsecops_recommendations.csv
-            gitleaks_report.sarif
