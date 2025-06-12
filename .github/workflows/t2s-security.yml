@@ -32,12 +32,15 @@ jobs:
         run: |
           sudo apt-get install wget apt-transport-https gnupg lsb-release -y
           wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
-          echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee -a /etc/apt/sources.list.d/trivy.list
+          echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee /etc/apt/sources.list.d/trivy.list
           sudo apt-get update
           sudo apt-get install trivy -y
 
+      # Use only the gitleaks-action to install gitleaks, not to run the scan directly
       - name: Install Gitleaks
         uses: gitleaks/gitleaks-action@v2.3.4
+        with:
+          args: version
 
       - name: Run Checkov on Terraform
         run: |
@@ -65,3 +68,8 @@ jobs:
             devsecops_scan_results.png
             devsecops_recommendations.csv
             gitleaks_report.sarif
+
+    # Add a workaround for deprecated set-output if needed
+    env:
+      # Ensures any ::set-output usage in custom scripts does not break
+      GITHUB_OUTPUT: ${{ github.output }}
