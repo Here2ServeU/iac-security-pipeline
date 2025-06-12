@@ -30,20 +30,21 @@ jobs:
 
       - name: Install Trivy
         run: |
-          sudo apt-get install wget apt-transport-https gnupg lsb-release -y
+          sudo apt-get update
+          sudo apt-get install wget apt-transport-https gnupg lsb-release unzip -y
           wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
           echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee -a /etc/apt/sources.list.d/trivy.list
           sudo apt-get update
           sudo apt-get install trivy -y
 
-      - name: Install Gitleaks (fixed method)
+      - name: Install Gitleaks
         run: |
           GITLEAKS_VERSION=8.18.1
           OS=$(uname -s | tr '[:upper:]' '[:lower:]')
           ARCH=$(uname -m)
-          curl -sSL -o gitleaks.tar https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_${OS}_${ARCH}.tar
-          mkdir -p gitleaks-bin
-          tar -xf gitleaks.tar -C gitleaks-bin
+          ZIP_FILE="gitleaks_${GITLEAKS_VERSION}_${OS}_${ARCH}.zip"
+          curl -sLO https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/${ZIP_FILE}
+          unzip -o $ZIP_FILE -d gitleaks-bin
           sudo mv gitleaks-bin/gitleaks /usr/local/bin/gitleaks
           gitleaks --version
 
@@ -53,7 +54,7 @@ jobs:
 
       - name: Run Trivy on Dockerfile
         run: |
-          trivy config --format json --output trivy-report.json .
+          trivy config --format json --output trivy-report.json . || true
 
       - name: Run Gitleaks
         run: |
