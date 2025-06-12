@@ -30,11 +30,11 @@ jobs:
 
       - name: Install Trivy
         run: |
-          sudo apt-get install wget apt-transport-https gnupg lsb-release -y
+          sudo apt-get install -y wget apt-transport-https gnupg lsb-release
           wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
-          echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee -a /etc/apt/sources.list.d/trivy.list
+          echo "deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/trivy.list
           sudo apt-get update
-          sudo apt-get install trivy -y
+          sudo apt-get install -y trivy
 
       - name: Install Gitleaks
         run: |
@@ -43,10 +43,8 @@ jobs:
 
       - name: Run Checkov on Terraform
         run: |
-          # Checkov will return exit code 1 if misconfigurations are found.
-          # We use `|| true` to ensure the step continues and outputs are generated.
-          # Best practice: remove `|| true` to find policy violations (which is normal).
-	  checkov -d terraform --output json > checkov-report.json || true
+          # Checkov may return exit code 1 if issues are found. Continue to generate report.
+          checkov -d terraform --output json > checkov-report.json || true
 
       - name: Run Trivy on Dockerfile
         run: |
