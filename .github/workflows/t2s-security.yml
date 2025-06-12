@@ -36,20 +36,19 @@ jobs:
           sudo apt-get update
           sudo apt-get install trivy -y
 
-      - name: Install Gitleaks
+      - name: Install Gitleaks (fixed method)
         run: |
           GITLEAKS_VERSION=8.18.1
           OS=$(uname -s | tr '[:upper:]' '[:lower:]')
           ARCH=$(uname -m)
-          curl -sSL https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_${OS}_${ARCH}.tar.gz -o gitleaks.tar.gz
-          tar -xzf gitleaks.tar.gz
-          sudo mv gitleaks /usr/local/bin/
+          curl -sSL -o gitleaks.tar https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_${OS}_${ARCH}.tar
+          mkdir -p gitleaks-bin
+          tar -xf gitleaks.tar -C gitleaks-bin
+          sudo mv gitleaks-bin/gitleaks /usr/local/bin/gitleaks
           gitleaks --version
 
       - name: Run Checkov on Terraform
         run: |
-          # Checkov will return exit code 1 if misconfigurations are found.
-          # `|| true` ensures the step continues and outputs are generated.
           checkov -d terraform --output json > checkov-report.json || true
 
       - name: Run Trivy on Dockerfile
